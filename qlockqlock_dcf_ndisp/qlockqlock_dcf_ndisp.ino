@@ -12,11 +12,21 @@ RTC_DS1307 rtc;
 const uint8_t PIN_DCF77 = 3;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
+int RST_PIN = 8;
+int RELAY_PIN = 9;
+
 int cmd = 0;
 int myPins[] = {22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
 
 
 void setup () {
+
+  //reset pin 
+  pinMode(RST_PIN, INPUT);
+  digitalWrite(RST_PIN,LOW);
+  //Relay control
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN,HIGH);
 
   // put your setup code here, to run once:
   for(int i = 0; i < (sizeof(myPins) / sizeof(myPins[0]));i++){
@@ -32,11 +42,15 @@ void setup () {
   while (!Serial); // wait for serial port to connect. Needed for native USB
 #endif
 
-  while (! rtc.begin()) {
+  if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
     Serial.flush();
-    //abort();
+    digitalWrite(RELAY_PIN,LOW);
+    delay(2000);
+    digitalWrite(RELAY_PIN,HIGH);
     delay(1000);
+    digitalWrite(RST_PIN,HIGH);
+    while(1);
   }
   Serial.println("RTC found");
 
@@ -221,7 +235,7 @@ int generateInteger() {
     case 32:
     case 33:
     case 34:
-      hh = (hh + 1) % 24;
+      //hh = (hh + 1) % 24;
       time = time + 34603008;
       break;
     case 35:
